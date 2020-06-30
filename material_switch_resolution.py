@@ -12,18 +12,20 @@ from os import path
 from os.path import isfile, join
 
 def switchMaterialName(self, incomingMaterialName):
-    if re.match(r'.*_1k\.png', incomingMaterialName):
-        return incomingMaterialName.replace("_1k", "_4k")
-    elif re.match(r'.*_4k\.png', incomingMaterialName):
-        return incomingMaterialName.replace("_4k", "_1k")
+    print(self.resolutionMask1)
+    if re.match(self.resolutionMask1, incomingMaterialName):
+        return incomingMaterialName.replace(self.replacePattern1, self.replacePattern2)
+    elif re.match(self.resolutionMask2, incomingMaterialName):
+        return incomingMaterialName.replace(self.replacePattern2, self.replacePattern1)
     else:
         return incomingMaterialName
 
 def purgeOrphans():
+    currentArea = context.area.type
     context.area.type = 'OUTLINER'
     bpy.context.space_data.display_mode = 'ORPHAN_DATA'
     bpy.ops.outliner.orphans_purge()
-    context.area.type = 'TEXT_EDITOR'
+    context.area.type = currentArea
     
 class MaterialSwitchResolution(bpy.types.Operator):
     """Switch all material resolution if available"""
@@ -31,7 +33,11 @@ class MaterialSwitchResolution(bpy.types.Operator):
     bl_label = "Switch Material Resolution"
     bl_options = {'REGISTER', 'UNDO'}
     
-    
+    resolutionMask1: bpy.props.StringProperty(name="resolutionMask1", default=".*_1k\.png", maxlen=50)
+    resolutionMask2: bpy.props.StringProperty(name="resolutionMask2", default=".*_4k\.png", maxlen=50)
+    replacePattern1: bpy.props.StringProperty(name="replacePattern1", default="_1k", maxlen=50)
+    replacePattern2: bpy.props.StringProperty(name="replacePattern2", default="_4k", maxlen=50)
+
     def execute(self, context):
         print("********** Start **********")
 
